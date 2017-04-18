@@ -43,7 +43,6 @@ public class ClientWindow extends JFrame implements Runnable {
 		
 		createWindow();
 		console("Attempting connection to " + address + ":" + port + " as username: " + name + "!");
-		console("What it do?");
 		String connection = "/c/" + name;
 		client.send(connection.getBytes());
 		running = true;
@@ -164,6 +163,7 @@ public class ClientWindow extends JFrame implements Runnable {
 					if (message.startsWith("/c/")) {
 						client.setID(Integer.parseInt(message.split("/c/|/e/")[1]));
 						console("Successfully connected to server! ID: " + client.getID());
+						console("What it do baby boo?");
 					} else if (message.startsWith("/m/")) {
 						
 						String text = message.substring(3);
