@@ -11,18 +11,20 @@ import java.util.List;
 public class Server implements Runnable {
 	
 	private List<ServerClient> clients = new ArrayList<ServerClient>();
+	private List<Integer> clientResponse = new ArrayList<Integer>();
 	
 	private DatagramSocket socket;
 	private boolean running = false;
 	private int port;
 	private Thread run, manage, send, receive;
 	
+	private final int MAX_ATTEMPTS = 5; 
+	
 	public Server (int port) {
 		this.port = port;
 		try {
 			socket = new DatagramSocket(port);
 		} catch (SocketException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return;
 		}
@@ -43,7 +45,26 @@ public class Server implements Runnable {
 		manage = new Thread("Manage") {
 			public void run() {
 				while (running) {
-					//Managing
+					sendToAll("/i/server");
+					try {
+						Thread.sleep(2000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					
+					for (int i = 0; i < clients.size(); i++) {
+						ServerClient c = clients.get(i);
+						if (!clientResponse.contains(c.getID())) {
+							if (c.attempt >= MAX_ATTEMPTS) {
+								disconnect(c.getID(), false);
+							} else {
+								c.attempt++;
+							}
+						} else {
+							clientResponse.remove(new Integer(c.getID()));
+							c.attempt = 0;
+						}
+					}
 				}
 			}
 		};
@@ -121,6 +142,8 @@ public class Server implements Runnable {
 		} else if (string.startsWith("/d/")) {
 			String id = string.split("/d/|/e/")[1];
 			disconnect(Integer.parseInt(id), true);
+		} else if (string.startsWith("/i/")) {
+			clientResponse.add(Integer.parseInt(string.split("/i/|/e/")[1]));
 		} else {
 			
 			System.out.println(string);

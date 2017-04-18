@@ -88,9 +88,13 @@ public class Client {
 	}
 	
 	public void close() {
-		synchronized (socket) {
-			socket.close();
-		}
+		new Thread() { 
+			public void run() {
+				synchronized (socket) {
+					socket.close();
+				}
+			}
+		}.start();
 	}
 
 	public void setID(int ID) {
