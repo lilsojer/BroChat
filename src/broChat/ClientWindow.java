@@ -206,7 +206,7 @@ public class ClientWindow extends JFrame implements Runnable {
 						client.setID(Integer.parseInt(message.split("/c/|/e/")[1]));
 						console("Successfully connected to server! ID: " + client.getID());
 						console("What it do baby boo?");
-						File soundFile = new File("C:/Users/JStevenson.YUMAREGIONAL/workspace/Chat/src/broChat/audio/Show_me_what_you_got!.wav");
+						File soundFile = new File("resources/Show_me_what_you_got!.wav");
 						AudioInputStream audioInputStream = null;
 						try {
 							audioInputStream = AudioSystem.getAudioInputStream( soundFile );
