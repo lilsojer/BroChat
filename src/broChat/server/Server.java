@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class Server implements Runnable {
 	
@@ -17,6 +18,8 @@ public class Server implements Runnable {
 	private boolean running = false;
 	private int port;
 	private Thread run, manage, send, receive;
+	
+	private boolean raw = false;
 	
 	private final int MAX_ATTEMPTS = 5; 
 	
@@ -38,6 +41,54 @@ public class Server implements Runnable {
 		System.out.println("Server started on port " + port);
 		manageClients();
 		receive();
+		Scanner scanner = new Scanner(System.in);
+		while (running) {
+			String text = scanner.nextLine();
+			if (!text.startsWith("/")) {
+				sendToAll("/m/Server: " + text + "/e/");
+				continue;
+			}
+			text = text.substring(1);
+			if (text.equals("raw")) {
+				raw = !raw;
+			} else if (text.equals("clients")) {
+				System.out.println("Clients: ");
+				System.out.println("=======");
+				for (int i = 0; i < clients.size(); i++) {
+					ServerClient c = clients.get(i);
+					System.out.println(c.name + "(" + c.getID() + ")" + c.address.toString() + ":" + c.port);
+				}
+				System.out.println("=======");
+			} else if (text.startsWith("kick")) {
+				String name = text.split(" ")[1];
+				int id = -1;
+				boolean number = true;
+				try {
+					id = Integer.parseInt(name);
+				} catch (NumberFormatException e) {
+					number = false;
+				}
+				if (number) {
+					boolean exists = false;
+					for (int i = 0; i < clients.size(); i++) {
+						if (clients.get(i).getID() == id) {
+							exists = true;
+							break;
+						}
+					}
+					if (exists) disconnect (id, true);
+					else System.out.println("Client " + id + " doesn't exist! Check ID Number!");
+				} else {
+					for (int i = 0; i < clients.size(); i++) {
+						ServerClient c = clients.get(i);
+						if (name.equals(c.name)) {
+							disconnect(c.getID(), true);
+							break;
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	private void manageClients(){
@@ -95,7 +146,11 @@ public class Server implements Runnable {
 	}
 	
 	private void sendToAll(String message) {
-		
+		if (message.startsWith("/m/")) {
+			String text = message.substring(3);
+			text = text.split("/e/")[0];
+			System.out.println(message);
+		}
 		for (int i = 0; i < clients.size(); i++) {
 			ServerClient client = clients.get(i);
 			send(message.getBytes(), client.address, client.port);
@@ -127,30 +182,29 @@ public class Server implements Runnable {
 	
 	private void process(DatagramPacket packet) {
 		String string = new String(packet.getData());
+		if (raw) System.out.println(string);
 		if (string.startsWith("/c/")){
-			string = string.trim();
+			//string = string.trim();
 			//UUID id = UUID.randomUUID();
 			int id = UniqueIdentifier.getIdentifier();
-			System.out.println("Identifier is: " + id);
-			clients.add(new ServerClient(string.substring(3, string.length()), packet.getAddress(), packet.getPort(), id));
-			System.out.println(string.substring(3, string.length()));
+			String name = string.split("/c/|/e/")[1];
+			System.out.println(name + " connected " + "with Identifier: " + id);
+			clients.add(new ServerClient(name, packet.getAddress(), packet.getPort(), id));
 			String ID = "/c/" + id;
 			send(ID, packet.getAddress(), packet.getPort());
 		} else if (string.startsWith("/m/")) {
 			sendToAll(string);
-			
 		} else if (string.startsWith("/d/")) {
 			String id = string.split("/d/|/e/")[1];
 			disconnect(Integer.parseInt(id), true);
 		} else if (string.startsWith("/i/")) {
 			clientResponse.add(Integer.parseInt(string.split("/i/|/e/")[1]));
 		} else {
-			
 			System.out.println(string);
 		}
 	}
 	
-	private void disconnect(int id,boolean status) {
+	private void disconnect(int id, boolean status) {
 		ServerClient c = null;
 		for (int i = 0; i < clients.size(); i++) {
 			

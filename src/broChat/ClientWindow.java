@@ -43,7 +43,7 @@ public class ClientWindow extends JFrame implements Runnable {
 		
 		createWindow();
 		console("Attempting connection to " + address + ":" + port + " as username: " + name + "!");
-		String connection = "/c/" + name;
+		String connection = "/c/" + name + "/e/";
 		client.send(connection.getBytes());
 		running = true;
 		run = new Thread(this, "Running");
@@ -148,9 +148,10 @@ public class ClientWindow extends JFrame implements Runnable {
 		if (text) {
 			message = client.getName() + ": " + message;
 			message = "/m/" + message;
+			txtMessage.setText("");
 		}
 		client.send(message.getBytes());
-		txtMessage.setText("");
+		
 	
 	}
 	
@@ -169,6 +170,9 @@ public class ClientWindow extends JFrame implements Runnable {
 						String text = message.substring(3);
 						text = text.split("/e/")[0];
 						console(text);
+					} else if (message.startsWith("/i/")) {
+						String text = "/i/" + client.getID() + "/e/";
+						send(text, false);
 					}
 				}
 			}
