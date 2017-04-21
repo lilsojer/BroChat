@@ -50,6 +50,8 @@ public class Server implements Runnable {
 			}
 			text = text.substring(1);
 			if (text.equals("raw")) {
+				if (raw) System.out.println("Raw mode is off.");
+				else System.out.println("Raw mode is on.");
 				raw = !raw;
 			} else if (text.equals("clients")) {
 				System.out.println("Clients: ");
@@ -87,16 +89,35 @@ public class Server implements Runnable {
 						}
 					}
 				}
+			} else if (text.equals("help")) {
+				printHelp();
+			} else if (text.equals("quit")) {
+				quit();
+			} else {
+				System.out.println("This is an unknown command!");
+				printHelp();
 			}
 		}
+		scanner.close();
 	}
 	
+	private void printHelp() {
+		System.out.println("Here is a list of all available commands:");
+		System.out.println("==========================================");
+		System.out.println("/raw - enables raw mode.");
+		System.out.println("/clients - shows all connected clients");
+		System.out.println("/kick [users ID or username] - kicks a user");
+		System.out.println("/help - shows this help message");
+		System.out.println("/quit - shuts down the server");
+		
+	}
 	private void manageClients(){
 		
 		manage = new Thread("Manage") {
 			public void run() {
 				while (running) {
 					sendToAll("/i/server");
+					sendStatus();
 					try {
 						Thread.sleep(2000);
 					} catch (InterruptedException e) {
@@ -123,6 +144,16 @@ public class Server implements Runnable {
 		
 	}
 	
+	private void sendStatus() {
+		if (clients.size() <= 0) return;
+		String users = "/u/";
+		for (int i =0; i < clients.size() - 1; i++) {
+			users += clients.get(i).name + "/n/";
+		}
+		users += clients.get(clients.size() - 1).name + "/e/";
+		sendToAll(users);
+		
+	}
 	private void receive() {
 		receive = new Thread("Receive") {
 			public void run() {
@@ -131,6 +162,7 @@ public class Server implements Runnable {
 					DatagramPacket packet = new DatagramPacket(data, data.length);
 					try {
 						socket.receive(packet);
+					} catch (SocketException e) {
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
@@ -204,17 +236,28 @@ public class Server implements Runnable {
 		}
 	}
 	
+	private void quit() {
+		for (int i = 0; i < clients.size(); i++) {
+			disconnect(clients.get(i).getID(), true);
+		}
+		
+		running = false;
+		socket.close();
+	}
+	
 	private void disconnect(int id, boolean status) {
 		ServerClient c = null;
+		boolean existed = false;
 		for (int i = 0; i < clients.size(); i++) {
 			
 			if (clients.get(i).getID() == id) {
 				c = clients.get(i);
 				clients.remove(i);
+				existed = true;
 				break;
 			}
 		}
-		
+		if (!existed) return;
 		String message = "";
 		if (status) {
 			
