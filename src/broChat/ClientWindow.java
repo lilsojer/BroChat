@@ -1,9 +1,9 @@
 package broChat;
 
-import java.applet.Applet;
-import java.applet.AudioClip;
+import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,17 +11,19 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
+import java.awt.image.ImageObserver;
+import java.awt.image.ImageProducer;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Properties;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -53,6 +55,7 @@ public class ClientWindow extends JFrame implements Runnable {
 	
 	private OnlineUsers users;
 	
+	Properties prop = new Properties();
 	
 	public ClientWindow(String name, String address, int port) {
 		setTitle("Broseph Chat");
@@ -81,6 +84,8 @@ public class ClientWindow extends JFrame implements Runnable {
 			e1.printStackTrace();
 		}
 		
+		ImageIcon icon = new ImageIcon(getClass().getResource("/resources/SwagIcon.png"));
+		setIconImage(icon.getImage());
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLocationRelativeTo(null);
@@ -102,6 +107,13 @@ public class ClientWindow extends JFrame implements Runnable {
 		
 		mntmExit = new JMenuItem("Exit");
 		mnFile.add(mntmExit);
+		mntmExit.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				
+				System.exit(0);
+			}
+		});
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -206,25 +218,23 @@ public class ClientWindow extends JFrame implements Runnable {
 						client.setID(Integer.parseInt(message.split("/c/|/e/")[1]));
 						console("Successfully connected to server! ID: " + client.getID());
 						console("What it do baby boo?");
-						File soundFile = new File("resources/Show_me_what_you_got!.wav");
+						URL soundFile;
+						soundFile = getClass().getResource("/resources/Show_me_what_you_got!.wav");
 						AudioInputStream audioInputStream = null;
 						try {
 							audioInputStream = AudioSystem.getAudioInputStream( soundFile );
 						} catch (UnsupportedAudioFileException | IOException e2) {
-							// TODO Auto-generated catch block
 							e2.printStackTrace();
 						}
 						Clip clip = null;
 						try {
 							clip = AudioSystem.getClip();
 						} catch (LineUnavailableException e1) {
-							// TODO Auto-generated catch block
 							e1.printStackTrace();
 						}
 						try {
 							clip.open(audioInputStream);
 						} catch (LineUnavailableException | IOException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 						clip.start();

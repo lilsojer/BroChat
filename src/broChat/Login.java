@@ -39,24 +39,19 @@ public class Login extends JFrame {
 		});
 	}
 
-	/**
-	 * Create the frame.
-	 */
+	// Create the frame
+	
 	public Login() {
 		
 		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); //Set the look and feel to be Windows-esque 
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (UnsupportedLookAndFeelException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -70,6 +65,8 @@ public class Login extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
+		
+		//Create the Name, IP Address and Port entry boxes and their respective labels
 		
 		txtName = new JTextField();
 		txtName.setBounds(64, 55, 165, 20);
@@ -98,6 +95,7 @@ public class Login extends JFrame {
 		txtPort.setBounds(64, 195, 165, 20);
 		contentPane.add(txtPort);
 		
+		//Create the Login button to send the entered data to the server.
 		JButton btnLogin = new JButton("Login");
 		btnLogin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -115,7 +113,7 @@ public class Login extends JFrame {
 	}
 	
 	private void login(String name, String address, int port) {
-		// Login code. Close window and print the input
+		// Login code. Close window and open a new Client Window.
 		dispose();
 		new ClientWindow(name, address, port);
 		
